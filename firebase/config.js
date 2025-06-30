@@ -1,10 +1,18 @@
-import { initializeApp } from 'firebase/app';
+// /firebase/config.js
+import { initializeApp } from "firebase/app";
+import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: 'YOUR_FIREBASE_API_KEY',
-  authDomain: 'YOUR_PROJECT.firebaseapp.com',
-  projectId: 'YOUR_PROJECT_ID',
-  appId: 'YOUR_APP_ID',
+  apiKey: "AIzaSyC0PHiq8KuosFDUu9oDbQkBULJfc5TWTBk",
+  authDomain: "rapidahost-a8660.firebaseapp.com",
+  projectId: "rapidahost-a8660",
+  storageBucket: "rapidahost-a8660.appspot.com",
+  messagingSenderId: "387960126750",
+  appId: "1:387960126750:web:27cd9e3c40c06f6c3298a1"
 };
 
-export const app = initializeApp(firebaseConfig);
+// Initialize Firebase App
+const app = initializeApp(firebaseConfig);
+
+// Export Authentication Instance
+export const auth = getAuth(app);
