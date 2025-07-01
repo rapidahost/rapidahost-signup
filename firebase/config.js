@@ -6,8 +6,8 @@ const firebaseConfig = {
   authDomain: "rapidahost-a8660.firebaseapp.com",
   projectId: "rapidahost-a8660",
   storageBucket: "rapidahost-a8660.appspot.com",
-  messagingSenderId: "ใส่ค่าจาก Firebase",
-  appId: "ใส่ค่าจาก Firebase"
+  messagingSenderId: "435134848810",
+  appId: "1:435134848810:web:0d1ff31cfa851bdbe14853"
 };
 
 const app = initializeApp(firebaseConfig);
