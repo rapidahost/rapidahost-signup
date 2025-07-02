@@ -18,7 +18,6 @@ export default async function handler(req, res) {
     phonenumber,
   } = req.body;
 
-  // ควรเก็บในไฟล์ .env.local
   const whmcsUrl = 'https://billing.rapidahost.com/includes/api.php';
   const whmcsApiIdentifier = process.env.WHMCS_API_IDENTIFIER;
   const whmcsApiSecret = process.env.WHMCS_API_SECRET;
@@ -27,39 +26,64 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Missing WHMCS API credentials' });
   }
 
-  const params = new URLSearchParams({
+  const baseParams = {
     identifier: whmcsApiIdentifier,
     secret: whmcsApiSecret,
-    action: 'AddClient',
     responsetype: 'json',
-    firstname,
-    lastname,
+  };
+
+  // 1. ตรวจสอบว่า email นี้มี client อยู่แล้วหรือไม่
+  const checkParams = new URLSearchParams({
+    ...baseParams,
+    action: 'GetClientsDetails',
     email,
-    password2: password,
-    address1,
-    city,
-    state,
-    postcode,
-    country,
-    phonenumber,
+    stats: 'false',
   });
 
   try {
-    const response = await fetch(whmcsUrl, {
+    const checkRes = await fetch(whmcsUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
+      body: checkParams.toString(),
     });
 
-    const data = await response.json();
+    const checkData = await checkRes.json();
 
-    if (data.result === 'success') {
-      return res.status(200).json({ success: true, clientid: data.clientid });
+    if (checkData.result === 'success' && checkData.clientid) {
+      return res.status(400).json({ success: false, message: 'Client already exists in WHMCS' });
+    }
+
+    // 2. ถ้ายังไม่มี client → AddClient
+    const createParams = new URLSearchParams({
+      ...baseParams,
+      action: 'AddClient',
+      firstname,
+      lastname,
+      email,
+      password2: password,
+      address1,
+      city,
+      state,
+      postcode,
+      country,
+      phonenumber,
+    });
+
+    const createRes = await fetch(whmcsUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: createParams.toString(),
+    });
+
+    const createData = await createRes.json();
+
+    if (createData.result === 'success') {
+      return res.status(200).json({ success: true, clientid: createData.clientid });
     } else {
       return res.status(400).json({
         success: false,
-        message: data.message || 'WHMCS API error',
-        raw: data,
+        message: createData.message || 'WHMCS AddClient failed',
+        raw: createData,
       });
     }
   } catch (err) {
@@ -69,4 +93,5 @@ export default async function handler(req, res) {
     });
   }
 }
+
 
