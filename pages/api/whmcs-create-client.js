@@ -1,3 +1,5 @@
+// pages/api/whmcs-create-client.js
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -16,26 +18,31 @@ export default async function handler(req, res) {
     phonenumber,
   } = req.body;
 
+  // ควรเก็บในไฟล์ .env.local
   const whmcsUrl = 'https://billing.rapidahost.com/includes/api.php';
-  const whmcsApiIdentifier = 'YOUR_API_IDENTIFIER'; // ใส่ API Identifier จริง
-  const whmcsApiSecret = 'YOUR_API_SECRET';         // ใส่ API Secret จริง
+  const whmcsApiIdentifier = process.env.WHMCS_API_IDENTIFIER;
+  const whmcsApiSecret = process.env.WHMCS_API_SECRET;
 
-  const params = new URLSearchParams();
-  params.append('identifier', whmcsApiIdentifier);
-  params.append('secret', whmcsApiSecret);
-  params.append('action', 'AddClient');
-  params.append('responsetype', 'json');
+  if (!whmcsApiIdentifier || !whmcsApiSecret) {
+    return res.status(500).json({ error: 'Missing WHMCS API credentials' });
+  }
 
-  params.append('firstname', firstname);
-  params.append('lastname', lastname);
-  params.append('email', email);
-  params.append('password2', password);
-  params.append('address1', address1);
-  params.append('city', city);
-  params.append('state', state);
-  params.append('postcode', postcode);
-  params.append('country', country);
-  params.append('phonenumber', phonenumber);
+  const params = new URLSearchParams({
+    identifier: whmcsApiIdentifier,
+    secret: whmcsApiSecret,
+    action: 'AddClient',
+    responsetype: 'json',
+    firstname,
+    lastname,
+    email,
+    password2: password,
+    address1,
+    city,
+    state,
+    postcode,
+    country,
+    phonenumber,
+  });
 
   try {
     const response = await fetch(whmcsUrl, {
@@ -49,9 +56,17 @@ export default async function handler(req, res) {
     if (data.result === 'success') {
       return res.status(200).json({ success: true, clientid: data.clientid });
     } else {
-      return res.status(400).json({ success: false, message: data.message });
+      return res.status(400).json({
+        success: false,
+        message: data.message || 'WHMCS API error',
+        raw: data,
+      });
     }
   } catch (err) {
-    return res.status(500).json({ error: 'WHMCS API Error', details: err.message });
+    return res.status(500).json({
+      error: 'WHMCS API Error',
+      details: err.message,
+    });
   }
 }
+
