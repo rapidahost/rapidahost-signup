@@ -1,8 +1,6 @@
-// /pages/api/whmcs-create-client.js
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ success: false, message: 'Method Not Allowed' });
   }
 
   const {
@@ -16,59 +14,46 @@ export default async function handler(req, res) {
     postcode,
     country,
     phonenumber,
-    firebase_uid, // เพิ่ม uid ที่ส่งมาจาก Firebase
+    firebase_uid, // 👈 รับค่าจาก body
   } = req.body;
 
-  const whmcsUrl = 'https://billing.rapidahost.com/includes/api.php';
-  const whmcsApiIdentifier = process.env.WHMCS_API_IDENTIFIER;
-  const whmcsApiSecret = process.env.WHMCS_API_SECRET;
-
-  if (!whmcsApiIdentifier || !whmcsApiSecret) {
-    return res.status(500).json({ error: 'Missing WHMCS API credentials' });
-  }
-
+  // ✅ วางตรงนี้
   const params = new URLSearchParams({
-    identifier: whmcsApiIdentifier,
-    secret: whmcsApiSecret,
-    action: 'AddClient',
+    action: 'addclient',
+    username: process.env.WHMCS_API_IDENTIFIER,
+    password: process.env.WHMCS_API_SECRET,
+    accesskey: process.env.WHMCS_API_ACCESS_KEY, // optional if used
     responsetype: 'json',
+
     firstname,
     lastname,
     email,
-    password2: password,
+    password2: password, // WHMCS ใช้ password2
     address1,
     city,
     state,
     postcode,
     country,
     phonenumber,
-    'customfields[firebase_uid]': firebase_uid, // <-- ส่งค่า UID ไปที่ custom field
+
+    // ✅ เพิ่ม custom field โดยใช้ชื่อ field เป็น key
+    'customfields[firebase_uid]': firebase_uid,
   });
 
   try {
-    const response = await fetch(whmcsUrl, {
+    const response = await fetch(process.env.WHMCS_API_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
+      body: params,
     });
 
     const data = await response.json();
 
     if (data.result === 'success') {
-      return res.status(200).json({ success: true, clientid: data.clientid });
+      res.status(200).json({ success: true, clientid: data.clientid });
     } else {
-      return res.status(400).json({
-        success: false,
-        message: data.message || 'WHMCS API error',
-        raw: data,
-      });
+      res.status(500).json({ success: false, message: data.message || 'WHMCS API error' });
     }
-  } catch (err) {
-    return res.status(500).json({
-      error: 'WHMCS API Error',
-      details: err.message,
-    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 }
-
-
