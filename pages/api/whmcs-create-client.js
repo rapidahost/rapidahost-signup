@@ -1,5 +1,3 @@
-// pages/api/whmcs-create-client.js
-
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -13,20 +11,28 @@ export default async function handler(req, res) {
     firebase_uid,
   } = req.body;
 
+  const identifier = process.env.WHMCS_API_IDENTIFIER;
+  const secret = process.env.WHMCS_API_SECRET;
+  const whmcsUrl = process.env.WHMCS_API_URL;
+
+  if (!identifier || !secret || !whmcsUrl) {
+    return res.status(500).json({ error: 'WHMCS API credentials missing in .env' });
+  }
+
   try {
     const params = new URLSearchParams({
       action: 'AddClient',
-      username: process.env.WHMCS_API_IDENTIFIER,
-      password: process.env.WHMCS_API_SECRET, // หรือ WHMCS API Hash
+      identifier,
+      secret,
       responsetype: 'json',
       firstname,
       lastname,
       email,
       phonenumber,
-      'customfields[firebase_uid]': firebase_uid, // ✅ ใส่ตรงนี้
+      'customfields[firebase_uid]': firebase_uid,
     });
 
-    const response = await fetch(process.env.WHMCS_API_URL, {
+    const response = await fetch(whmcsUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: params.toString(),
