@@ -1,4 +1,3 @@
-// pages/signup.jsx
 import React from "react";
 import app from "../firebase/config";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
@@ -33,6 +32,8 @@ const Signup = () => {
       });
 
       const data = await res.json();
+      console.log("WHMCS Response:", data); // ✅ Debug ตรงนี้
+
       if (res.ok) {
         alert("สมัครสมาชิกเรียบร้อยแล้ว");
       } else {
@@ -57,8 +58,6 @@ const Signup = () => {
         <button type="submit">Submit</button>
       </form>
     </div>
-    const data = await res.json();
-console.log("WHMCS Response:", data);
   );
 };
 
