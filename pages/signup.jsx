@@ -57,7 +57,6 @@ const Signup = () => {
         <button type="submit">Submit</button>
       </form>
     </div>
-
     const data = await res.json();
 console.log("WHMCS Response:", data);
   );
