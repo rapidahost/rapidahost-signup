@@ -1,5 +1,8 @@
-// pages/api/whmcs-create-client.js
 export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   const response = await fetch("https://billing.rapidahost.com/includes/api.php", {
     method: "POST",
     headers: {
@@ -8,10 +11,15 @@ export default async function handler(req, res) {
     body: JSON.stringify({
       action: "CreateClient",
       accesskey: process.env.WHMCS_API_ACCESS_KEY,
-      ...req.body, // รับข้อมูลจาก frontend ที่ส่งเข้ามา
+      ...req.body, // ข้อมูลจาก frontend
     }),
   });
 
-  const data = await response.json();
-  res.status(response.status).json(data);
+  const text = await response.text();
+  try {
+    const data = JSON.parse(text);
+    res.status(response.status).json(data);
+  } catch (err) {
+    res.status(response.status).json({ error: "Invalid JSON response", raw: text });
+  }
 }
