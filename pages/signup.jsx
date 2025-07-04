@@ -37,7 +37,9 @@ const Signup = () => {
       if (res.ok) {
         alert("สมัครสมาชิกเรียบร้อยแล้ว");
       } else {
-        console.error("WHMCS Error:", data);
+        console.log("WHMCS Response:", data);
+        console.error("WHMCS Error:", JSON.stringify(data, null, 2));
+
         alert("สมัคร Firebase สำเร็จ แต่ส่งข้อมูลไป WHMCS ไม่สำเร็จ");
       }
     } catch (error) {
