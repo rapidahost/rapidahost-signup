@@ -7,6 +7,7 @@ export default async function handler(req, res) {
     firstname,
     lastname,
     email,
+    password,
     phonenumber,
     firebase_uid,
   } = req.body;
@@ -16,7 +17,7 @@ export default async function handler(req, res) {
   const whmcsUrl = process.env.WHMCS_API_URL;
 
   if (!identifier || !secret || !whmcsUrl) {
-    console.error("🚨 Missing WHMCS ENV variables");
+    console.error("❌ Missing WHMCS credentials in .env");
     return res.status(500).json({ error: 'WHMCS API credentials missing in .env' });
   }
 
@@ -29,14 +30,15 @@ export default async function handler(req, res) {
       firstname,
       lastname,
       email,
-      password: 'Random1234', // หรือจะใช้ password ที่ user ป้อนเข้ามาก็ได้
+      password,
       phonenumber,
       'customfields[firebase_uid]': firebase_uid,
     });
 
-    // 🔍 Log debug
-    console.log("📤 Sending to WHMCS API:", whmcsUrl);
-    console.log("📤 Params:", params.toString());
+    // 🔎 Log ค่าที่จะส่งไปยัง WHMCS
+    console.log("📤 Sending to WHMCS...");
+    console.log("📤 WHMCS URL:", whmcsUrl);
+    console.log("📤 Request Params:", params.toString());
 
     const response = await fetch(whmcsUrl, {
       method: 'POST',
@@ -45,15 +47,20 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-    console.log("📥 WHMCS Response:", data);
+
+    // 🔍 Log ค่าที่ได้กลับจาก WHMCS
+    console.log("📥 WHMCS Raw Response:", data);
 
     if (data.result === 'success') {
       return res.status(200).json({ message: 'WHMCS client created successfully' });
     } else {
-      return res.status(400).json({ error: data.message || 'WHMCS API error' });
+      return res.status(400).json({
+        error: data.message || 'WHMCS API error',
+        fullResponse: data, // 🔁 แนบข้อมูลทั้งหมดเพื่อ debug
+      });
     }
   } catch (error) {
-    console.error("🔥 WHMCS API Call Error:", error);
+    console.error("❌ API call failed:", error.message);
     return res.status(500).json({ error: error.message });
   }
 }
