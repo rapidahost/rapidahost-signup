@@ -2,56 +2,42 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method Not Allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const {
     firstname,
     lastname,
     email,
-    phonenumber,
-    firebase_uid
+    phone,
+    password
   } = req.body;
 
-  const accessKey = 'PUT_YOUR_ACCESS_KEY_HERE'; // 🔐 WHMCS API Access Key
-  const whmcsUrl = 'https://billing.rapidahost.com/includes/api.php';
+  const accessKey = process.env.WHMCS_API_ACCESS_KEY; // เก็บไว้ใน Vercel Secret
 
-  const payload = new URLSearchParams({
+  const postData = {
     action: 'AddClient',
+    username: 'admin_api_username', // ไม่จำเป็นถ้าใช้ accesskey แบบ full
     accesskey: accessKey,
-    responsetype: 'json',
     firstname,
     lastname,
     email,
-    phonenumber,
-    'customfields[firebase_uid]': firebase_uid
-  });
+    phonenumber: phone,
+    password2: password,
+    responsetype: 'json'
+  };
 
   try {
-    const response = await axios.post(whmcsUrl, payload.toString(), {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    const response = await axios.post('https://billing.rapidahost.com/includes/api.php', null, {
+      params: postData
     });
 
-    const data = response.data;
-
-    if (data.result === 'success') {
-      return res.status(200).json({
-        success: true,
-        clientid: data.clientid,
-        message: 'WHMCS client created successfully'
-      });
+    if (response.data.result === 'success') {
+      return res.status(200).json({ success: true, clientId: response.data.clientid });
     } else {
-      return res.status(400).json({
-        success: false,
-        error: data.message || 'WHMCS API error',
-        raw: data
-      });
+      return res.status(400).json({ error: response.data.message });
     }
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      error: 'WHMCS API Connection Failed',
-      details: error.message
-    });
+    return res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }
