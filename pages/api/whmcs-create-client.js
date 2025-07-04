@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
@@ -7,60 +9,49 @@ export default async function handler(req, res) {
     firstname,
     lastname,
     email,
-    password,
     phonenumber,
-    firebase_uid,
+    firebase_uid
   } = req.body;
 
-  const identifier = process.env.WHMCS_API_IDENTIFIER;
-  const secret = process.env.WHMCS_API_SECRET;
-  const whmcsUrl = process.env.WHMCS_API_URL;
+  const accessKey = 'PUT_YOUR_ACCESS_KEY_HERE'; // 🔐 WHMCS API Access Key
+  const whmcsUrl = 'https://billing.rapidahost.com/includes/api.php';
 
-  if (!identifier || !secret || !whmcsUrl) {
-    console.error("❌ Missing WHMCS credentials in .env");
-    return res.status(500).json({ error: 'WHMCS API credentials missing in .env' });
-  }
+  const payload = new URLSearchParams({
+    action: 'AddClient',
+    accesskey: accessKey,
+    responsetype: 'json',
+    firstname,
+    lastname,
+    email,
+    phonenumber,
+    'customfields[firebase_uid]': firebase_uid
+  });
 
   try {
-    const params = new URLSearchParams({
-      action: 'AddClient',
-      username: identifier,
-      password: secret,
-      responsetype: 'json',
-      firstname,
-      lastname,
-      email,
-      password,
-      phonenumber,
-      'customfields[firebase_uid]': firebase_uid,
+    const response = await axios.post(whmcsUrl, payload.toString(), {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
 
-    // 🔎 Log ค่าที่จะส่งไปยัง WHMCS
-    console.log("📤 Sending to WHMCS...");
-    console.log("📤 WHMCS URL:", whmcsUrl);
-    console.log("📤 Request Params:", params.toString());
-
-    const response = await fetch(whmcsUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: params.toString(),
-    });
-
-    const data = await response.json();
-
-    // 🔍 Log ค่าที่ได้กลับจาก WHMCS
-    console.log("📥 WHMCS Raw Response:", data);
+    const data = response.data;
 
     if (data.result === 'success') {
-      return res.status(200).json({ message: 'WHMCS client created successfully' });
+      return res.status(200).json({
+        success: true,
+        clientid: data.clientid,
+        message: 'WHMCS client created successfully'
+      });
     } else {
       return res.status(400).json({
+        success: false,
         error: data.message || 'WHMCS API error',
-        fullResponse: data, // 🔁 แนบข้อมูลทั้งหมดเพื่อ debug
+        raw: data
       });
     }
   } catch (error) {
-    console.error("❌ API call failed:", error.message);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: 'WHMCS API Connection Failed',
+      details: error.message
+    });
   }
 }
