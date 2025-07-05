@@ -10,7 +10,7 @@ export default async function handler(req, res) {
     "Content-Type": "application/json",
   },
   body: JSON.stringify({
-    accesskey: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",
+    accesskey: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",  // ตรงกับ configuration.php
     action: "CreateClient",
     responsetype: "json",
     ...req.body
