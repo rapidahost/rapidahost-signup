@@ -5,15 +5,17 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        action: "CreateClient",
-        ...req.body,
-      }),
-    });
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    accesskey: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",
+    action: "CreateClient",
+    responsetype: "json",
+    ...req.body
+  }),
+});
 
     const data = await response.json();
     return res.status(200).json(data);
