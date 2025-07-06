@@ -1,53 +1,45 @@
-// pages/signup.jsx
+import { useState } from "react";
 
-import { useState } from 'react';
-
-export default function Signup() {
+export default function SignupPage() {
   const [form, setForm] = useState({
-    firstname: '',
-    lastname: '',
-    phonenumber: '',
-    email: '',
-    password: '',
+    firstname: "",
+    lastname: "",
+    phonenumber: "",
+    email: "",
+    password: "",
   });
 
-  const handleChange = e => {
+  const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const firebase_uid = 'example_firebase_uid'; // คุณจะต้องใส่จาก Firebase Auth จริง
+    const firebase_uid = "abc123xyz"; // ดึงจาก Firebase Auth จริงใน production
 
-    const res = await fetch('/api/whmcs-create-client', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+    const response = await fetch("/api/whmcs-create-client", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, firebase_uid }),
     });
 
-    const result = await res.json();
-    console.log('WHMCS Response:', result);
-
-    if (res.ok) {
-      alert('สมัครสำเร็จ');
-      // หรือ redirect: window.location.href = "/login";
-    } else {
-      alert('เกิดข้อผิดพลาด: ' + (result.error || 'ไม่สามารถสมัครได้'));
-    }
+    const result = await response.json();
+    console.log("WHMCS Response:", result);
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <div>
       <h1>Sign Up</h1>
-      <input name="firstname" placeholder="Firstname" onChange={handleChange} required />
-      <input name="lastname" placeholder="Lastname" onChange={handleChange} required />
-      <input name="phonenumber" placeholder="Phone Number" onChange={handleChange} required />
-      <input name="email" placeholder="Email" onChange={handleChange} required />
-      <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
-      <button type="submit">Submit</button>
-    </form>
+      <form onSubmit={handleSubmit}>
+        <input name="firstname" onChange={handleChange} placeholder="First Name" />
+        <input name="lastname" onChange={handleChange} placeholder="Last Name" />
+        <input name="phonenumber" onChange={handleChange} placeholder="Phone Number" />
+        <input name="email" onChange={handleChange} placeholder="Email" />
+        <input name="password" type="password" onChange={handleChange} placeholder="Password" />
+        <button type="submit">Submit</button>
+      </form>
+    </div>
   );
 }
+
