@@ -12,8 +12,8 @@ export default async function handler(req, res) {
       email,
       phonenumber,
       password2: password,
-      identifier: process.env.WHMCS_IDENTIFIER, // หรือใส่ค่าตรงๆก็ได้
-      secret: process.env.WHMCS_SECRET
+      identifier: process.env.WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx, // หรือใส่ค่าตรงๆก็ได้
+      secret: process.env.f0cwwd42iNulOj6erwLNLgRhL4vJZBuH
     };
 
     const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
