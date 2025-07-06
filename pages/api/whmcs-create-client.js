@@ -4,16 +4,20 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ใน whmcs-create-client.js
-const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify(req.body),
-});
+    // ใส่ identifier และ secret ที่ WHMCS ให้ไว้
+    const body = {
+      ...req.body,
+      identifier: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",
+      secret: "f0cwwd42iNulOj6erwLNLgRhL4vJZBuH"
+    };
 
-});
+    const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body),
+    });
 
     const data = await response.json();
     return res.status(200).json(data);
@@ -22,6 +26,5 @@ const response = await fetch("https://billing.rapidahost.com/api-create-client.p
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
-
 
 
