@@ -1,43 +1,45 @@
-// pages/signup.jsx
-import { useState } from "react";
+import { useState } from 'react';
 
 export default function Signup() {
   const [form, setForm] = useState({
-    firstname: "",
-    lastname: "",
-    phone: "",
-    email: "",
-    password: ""
+    firstname: '',
+    lastname: '',
+    phonenumber: '',
+    email: '',
+    password: '',
   });
 
-  const handleChange = (e) =>
+  const handleChange = e => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     try {
-      const res = await fetch("https://billing.rapidahost.com/api-create-client.php", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const res = await fetch('https://billing.rapidahost.com/api-create-client.php', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify(form),
       });
-      const data = await res.json();
-      console.log("WHMCS Response:", data);
-      alert(data.message || "Signup complete");
+      const result = await res.json();
+      alert(JSON.stringify(result));
     } catch (err) {
-      console.error("Error:", err);
+      console.error('Error:', err);
+      alert('Signup failed. See console.');
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
+    <>
       <h1>Sign Up</h1>
       <input name="firstname" placeholder="First Name" onChange={handleChange} />
       <input name="lastname" placeholder="Last Name" onChange={handleChange} />
-      <input name="phone" placeholder="Phone" onChange={handleChange} />
+      <input name="phonenumber" placeholder="Phone" onChange={handleChange} />
       <input name="email" placeholder="Email" onChange={handleChange} />
-      <input name="password" type="password" placeholder="Password" onChange={handleChange} />
-      <button type="submit">Submit</button>
-    </form>
+      <input name="password" placeholder="Password" type="password" onChange={handleChange} />
+      <button onClick={handleSubmit}>Submit</button>
+    </>
   );
 }
+
