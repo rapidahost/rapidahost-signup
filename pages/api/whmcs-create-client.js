@@ -4,17 +4,15 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
+    // ใน whmcs-create-client.js
+const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
   method: "POST",
   headers: {
-    "Content-Type": "application/json",
+    "Content-Type": "application/json"
   },
-  body: JSON.stringify({
-    accesskey: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",  // ตรงกับ configuration.php
-    action: "CreateClient",
-    responsetype: "json",
-    ...req.body
-  }),
+  body: JSON.stringify(req.body),
+});
+
 });
 
     const data = await response.json();
