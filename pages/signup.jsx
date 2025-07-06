@@ -1,28 +1,43 @@
-import { useState } from 'react';
+// pages/signup.jsx
+import { useState } from "react";
 
 export default function Signup() {
-  const [form, setForm] = useState({ firstname: '', lastname: '', phone: '', email: '', password: '' });
+  const [form, setForm] = useState({
+    firstname: "",
+    lastname: "",
+    phone: "",
+    email: "",
+    password: ""
+  });
+
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const res = await fetch('https://billing.rapidahost.com/api-create-client.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form),
-    });
-    const result = await res.json();
-    console.log('WHMCS Response:', result);
+    try {
+      const res = await fetch("https://billing.rapidahost.com/api-create-client.php", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const data = await res.json();
+      console.log("WHMCS Response:", data);
+      alert(data.message || "Signup complete");
+    } catch (err) {
+      console.error("Error:", err);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <input placeholder="First Name" onChange={(e) => setForm({ ...form, firstname: e.target.value })} />
-      <input placeholder="Last Name" onChange={(e) => setForm({ ...form, lastname: e.target.value })} />
-      <input placeholder="Phone" onChange={(e) => setForm({ ...form, phone: e.target.value })} />
-      <input placeholder="Email" onChange={(e) => setForm({ ...form, email: e.target.value })} />
-      <input placeholder="Password" type="password" onChange={(e) => setForm({ ...form, password: e.target.value })} />
+      <h1>Sign Up</h1>
+      <input name="firstname" placeholder="First Name" onChange={handleChange} />
+      <input name="lastname" placeholder="Last Name" onChange={handleChange} />
+      <input name="phone" placeholder="Phone" onChange={handleChange} />
+      <input name="email" placeholder="Email" onChange={handleChange} />
+      <input name="password" type="password" placeholder="Password" onChange={handleChange} />
       <button type="submit">Submit</button>
     </form>
   );
 }
-
