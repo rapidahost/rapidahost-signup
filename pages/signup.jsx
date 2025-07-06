@@ -1,66 +1,53 @@
-import React from "react";
-import app from "../firebase/config";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+// pages/signup.jsx
 
-const auth = getAuth(app);
+import { useState } from 'react';
 
-const Signup = () => {
-  const handleSubmit = async (e) => {
+export default function Signup() {
+  const [form, setForm] = useState({
+    firstname: '',
+    lastname: '',
+    phonenumber: '',
+    email: '',
+    password: '',
+  });
+
+  const handleChange = e => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async e => {
     e.preventDefault();
-    const email = e.target.email.value;
-    const password = e.target.password.value;
-    const firstname = e.target.firstname.value;
-    const lastname = e.target.lastname.value;
-    const phonenumber = e.target.phonenumber.value;
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+    const firebase_uid = 'example_firebase_uid'; // คุณจะต้องใส่จาก Firebase Auth จริง
 
-      // 🔁 ส่งข้อมูลไป WHMCS API
-      const res = await fetch('/api/whmcs-create-client', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          firstname,
-          lastname,
-          email,
-          password,
-          phonenumber,
-          firebase_uid: user.uid, // ✅ ส่ง Firebase UID ไปเก็บใน WHMCS
-        }),
-      });
+    const res = await fetch('/api/whmcs-create-client', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ ...form, firebase_uid }),
+    });
 
-      const data = await res.json();
-      console.log("WHMCS Response:", data); // ✅ Debug ตรงนี้
+    const result = await res.json();
+    console.log('WHMCS Response:', result);
 
-      if (res.ok) {
-        alert("สมัครสมาชิกเรียบร้อยแล้ว");
-      } else {
-        console.log("WHMCS Response:", data);
-        console.error("WHMCS Error:", JSON.stringify(data, null, 2));
-
-        alert("สมัคร Firebase สำเร็จ แต่ส่งข้อมูลไป WHMCS ไม่สำเร็จ");
-      }
-    } catch (error) {
-      console.error("Firebase Error:", error.message);
-      alert("Signup Failed: " + error.message);
+    if (res.ok) {
+      alert('สมัครสำเร็จ');
+      // หรือ redirect: window.location.href = "/login";
+    } else {
+      alert('เกิดข้อผิดพลาด: ' + (result.error || 'ไม่สามารถสมัครได้'));
     }
   };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit}>
       <h1>Sign Up</h1>
-      <form onSubmit={handleSubmit}>
-        <input type="text" name="firstname" placeholder="First Name" required /><br />
-        <input type="text" name="lastname" placeholder="Last Name" required /><br />
-        <input type="text" name="phonenumber" placeholder="Phone Number" required /><br />
-        <input type="email" name="email" placeholder="Email" required /><br />
-        <input type="password" name="password" placeholder="Password" required /><br />
-        <button type="submit">Submit</button>
-      </form>
-    </div>
+      <input name="firstname" placeholder="Firstname" onChange={handleChange} required />
+      <input name="lastname" placeholder="Lastname" onChange={handleChange} required />
+      <input name="phonenumber" placeholder="Phone Number" onChange={handleChange} required />
+      <input name="email" placeholder="Email" onChange={handleChange} required />
+      <input name="password" type="password" placeholder="Password" onChange={handleChange} required />
+      <button type="submit">Submit</button>
+    </form>
   );
-};
-
-export default Signup;
+}
