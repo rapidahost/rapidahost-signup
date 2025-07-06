@@ -4,11 +4,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    // ใส่ identifier และ secret ที่ WHMCS ให้ไว้
+    const { firstname, lastname, email, phonenumber, password } = req.body;
+
     const body = {
-      ...req.body,
-      identifier: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",
-      secret: "f0cwwd42iNulOj6erwLNLgRhL4vJZBuH"
+      firstname,
+      lastname,
+      email,
+      phonenumber,
+      password2: password,
+      identifier: process.env.WHMCS_IDENTIFIER, // หรือใส่ค่าตรงๆก็ได้
+      secret: process.env.WHMCS_SECRET
     };
 
     const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
@@ -26,5 +31,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 }
+
 
 
