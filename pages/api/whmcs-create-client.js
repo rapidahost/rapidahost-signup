@@ -5,22 +5,26 @@ export default async function handler(req, res) {
 
   try {
     const {
-      firstname,
-      lastname,
-      email,
-      phonenumber,
-      password
-    } = req.body;
+  firstname,
+  lastname,
+  email,
+  phonenumber,
+  password,
+  firebase_uid    // ✅ เพิ่มตรงนี้
+} = req.body;
 
     const body = {
-      firstname,
-      lastname,
-      email,
-      phonenumber,
-      password,
-      identifier: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx", // ✅ จาก WHMCS
-      secret: "f0cwwd42iNulOj6erwLNLgRhL4vJZBuH"      // ✅ จาก WHMCS
-    };
+  identifier: "WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx",
+  secret: "f0cwwd42iNulOj6erwLNLgRhL4vJZBuH",
+  action: "CreateClient",
+  responsetype: "json",
+  firstname,
+  lastname,
+  email,
+  password,
+  phonenumber,
+  'customfields[firebase_uid]': firebase_uid
+};
 
     const response = await fetch("https://billing.rapidahost.com/api-create-client.php", {
       method: "POST",
