@@ -1,66 +1,50 @@
 import { useState } from 'react';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../firebase'; // ตรวจสอบว่าไฟล์ firebase.js ถูกต้อง
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-
-    const payload = {
-      email,
-      password,
-    };
-
     try {
-      const res = await fetch('https://billing.rapidahost.com/api-create-client.php', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const data = await res.json();
-
-      if (data.result === 'success') {
-        alert('✅ สมัครสมาชิกสำเร็จ');
-      } else {
-        alert(`❌ สมัครไม่สำเร็จ: ${data.message}`);
-      }
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      setMessage(`Signup successful: ${user.email}`);
+      // 🔜 สามารถส่ง POST ไป WHMCS API ที่ backend ได้ต่อจากนี้
     } catch (error) {
-      alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ Billing');
+      setMessage(error.message);
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: '80px auto', padding: 20, border: '1px solid #ccc' }}>
-      <h2>สมัครสมาชิก Rapidahost</h2>
-      <form onSubmit={handleSubmit}>
-        <div style={{ marginBottom: 12 }}>
-          <label>Email:</label><br />
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ width: '100%' }}
-          />
-        </div>
-        <div style={{ marginBottom: 12 }}>
-          <label>Password:</label><br />
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ width: '100%' }}
-          />
-        </div>
-        <button type="submit" style={{ padding: '10px 20px' }}>สมัครสมาชิก</button>
+    <div style={{ maxWidth: 400, margin: 'auto', padding: 20 }}>
+      <h2>Sign Up</h2>
+      <form onSubmit={handleSignup}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          required
+          onChange={(e) => setEmail(e.target.value)}
+          style={{ display: 'block', width: '100%', marginBottom: 10 }}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          required
+          onChange={(e) => setPassword(e.target.value)}
+          style={{ display: 'block', width: '100%', marginBottom: 10 }}
+        />
+        <button type="submit">Create Account</button>
       </form>
+      {message && <p>{message}</p>}
     </div>
   );
 }
+
 
 
