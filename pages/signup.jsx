@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase'; // ตรวจสอบว่าไฟล์ firebase.js ถูกต้อง
+import { auth } from '../lib/firebase'; // ตรวจสอบว่าไฟล์ firebase.js ถูกต้อง
 
 export default function SignupPage() {
   const [email, setEmail] = useState('');
