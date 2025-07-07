@@ -1,45 +1,66 @@
 import { useState } from 'react';
 
-export default function Signup() {
-  const [form, setForm] = useState({
-    firstname: '',
-    lastname: '',
-    phonenumber: '',
-    email: '',
-    password: '',
-  });
+export default function SignupPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const handleSubmit = async () => {
+    const payload = {
+      email,
+      password,
+    };
+
     try {
       const res = await fetch('https://billing.rapidahost.com/api-create-client.php', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(form),
+        body: JSON.stringify(payload),
       });
-      const result = await res.json();
-      alert(JSON.stringify(result));
-    } catch (err) {
-      console.error('Error:', err);
-      alert('Signup failed. See console.');
+
+      const data = await res.json();
+
+      if (data.result === 'success') {
+        alert('✅ สมัครสมาชิกสำเร็จ');
+      } else {
+        alert(`❌ สมัครไม่สำเร็จ: ${data.message}`);
+      }
+    } catch (error) {
+      alert('❌ เกิดข้อผิดพลาดในการเชื่อมต่อกับระบบ Billing');
     }
   };
 
   return (
-    <>
-      <h1>Sign Up</h1>
-      <input name="firstname" placeholder="First Name" onChange={handleChange} />
-      <input name="lastname" placeholder="Last Name" onChange={handleChange} />
-      <input name="phonenumber" placeholder="Phone" onChange={handleChange} />
-      <input name="email" placeholder="Email" onChange={handleChange} />
-      <input name="password" placeholder="Password" type="password" onChange={handleChange} />
-      <button onClick={handleSubmit}>Submit</button>
-    </>
+    <div style={{ maxWidth: 400, margin: '80px auto', padding: 20, border: '1px solid #ccc' }}>
+      <h2>สมัครสมาชิก Rapidahost</h2>
+      <form onSubmit={handleSubmit}>
+        <div style={{ marginBottom: 12 }}>
+          <label>Email:</label><br />
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <div style={{ marginBottom: 12 }}>
+          <label>Password:</label><br />
+          <input
+            type="password"
+            required
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ width: '100%' }}
+          />
+        </div>
+        <button type="submit" style={{ padding: '10px 20px' }}>สมัครสมาชิก</button>
+      </form>
+    </div>
   );
 }
+
 
