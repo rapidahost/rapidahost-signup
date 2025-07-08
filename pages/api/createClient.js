@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       firstname: 'New',
       lastname: 'Client',
       country: 'TH',
-      responseType: 'json',
+      responsetype: 'json',
     });
 
     const authHeader = 'WHMCS ' + Buffer.from(`${identifier}:${secret}`).toString('base64');
