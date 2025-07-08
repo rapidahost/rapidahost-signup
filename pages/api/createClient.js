@@ -1,43 +1,53 @@
-// pages/api/createClient.js
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { email, password } = req.body;
-
-  const formData = new URLSearchParams();
-  formData.append('action', 'AddClient');
-  formData.append('username', process.env.NEXT_PUBLIC_WHMCS_IDENTIFIER);
-  formData.append('password', process.env.NEXT_PUBLIC_WHMCS_SECRET);
-  formData.append('responsetype', 'json');
-
-  formData.append('firstname', 'User');
-  formData.append('lastname', 'Firebase');
-  formData.append('email', email);
-  formData.append('address1', 'Auto Created');
-  formData.append('city', 'Bangkok');
-  formData.append('state', 'TH');
-  formData.append('postcode', '10100');
-  formData.append('country', 'TH');
-  formData.append('phonenumber', '0000000000');
-  formData.append('password2', password);
-
   try {
-    const response = await fetch(process.env.NEXT_PUBLIC_WHMCS_API_URL, {
+    console.log('Incoming request:', req.body); // ✅ Debug input
+
+    const { email } = req.body;
+    // 🔑 ตรวจสอบว่าคุณได้ใช้ process.env.WHMCS_API_* ครบหรือไม่
+    const apiUrl = process.env.WHMCS_API_URL;
+    const identifier = process.env.WHMCS_API_IDENTIFIER;
+    const secret = process.env.WHMCS_API_SECRET;
+
+    if (!apiUrl || !identifier || !secret) {
+      console.error('❌ Missing WHMCS API credentials in environment variables');
+      return res.status(500).json({ error: 'Missing WHMCS credentials' });
+    }
+
+    const payload = new URLSearchParams({
+      action: 'AddClient',
+      username: email,
+      email,
+      password2: 'R@pidaHost123', // หรือจะส่งผ่าน req.body ก็ได้
+      firstname: 'New',
+      lastname: 'Client',
+      country: 'TH',
+      responseType: 'json',
+    });
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString()
+      headers: {
+        'Authorization': 'WHMCS ' + Buffer.from(`${identifier}:${secret}`).toString('base64'),
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: payload.toString(),
     });
 
     const data = await response.json();
+    console.log('WHMCS API Response:', data);
 
-    if (data.result === 'success') {
-      return res.status(200).json({ success: true, clientid: data.clientid });
-    } else {
-      return res.status(500).json({ success: false, error: data.message });
+    if (!response.ok || data.result !== 'success') {
+      return res.status(500).json({ error: 'WHMCS API error', details: data });
     }
+
+    return res.status(200).json({ message: 'Client created successfully' });
   } catch (err) {
-    return res.status(500).json({ success: false, error: err.message });
+    console.error('❌ Server error in /api/createClient:', err);
+    return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
+
