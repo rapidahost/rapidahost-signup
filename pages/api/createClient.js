@@ -4,16 +4,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Incoming request:', req.body); // ✅ Debug input
+    console.log('📥 Incoming request:', req.body);
 
     const { email } = req.body;
-    // 🔑 ตรวจสอบว่าคุณได้ใช้ process.env.WHMCS_API_* ครบหรือไม่
+
     const apiUrl = process.env.WHMCS_API_URL;
     const identifier = process.env.WHMCS_API_IDENTIFIER;
     const secret = process.env.WHMCS_API_SECRET;
 
     if (!apiUrl || !identifier || !secret) {
-      console.error('❌ Missing WHMCS API credentials in environment variables');
+      console.error('❌ Missing WHMCS API credentials');
       return res.status(500).json({ error: 'Missing WHMCS credentials' });
     }
 
@@ -21,11 +21,11 @@ export default async function handler(req, res) {
       action: 'AddClient',
       username: email,
       email,
-      password2: 'R@pidaHost123', // หรือจะส่งผ่าน req.body ก็ได้
+      password2: 'R@pidaHost123',
       firstname: 'New',
       lastname: 'Client',
       country: 'TH',
-      responseType: 'json',
+      responsetype: 'json' // ต้องเป็นตัวเล็กทั้งหมด
     });
 
     const response = await fetch(apiUrl, {
@@ -37,17 +37,25 @@ export default async function handler(req, res) {
       body: payload.toString(),
     });
 
-    const data = await response.json();
-    console.log('WHMCS API Response:', data);
+    const raw = await response.text();
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch (err) {
+      console.error('❌ WHMCS returned non-JSON:', raw);
+      return res.status(500).json({ error: 'WHMCS did not return valid JSON', raw });
+    }
+
+    console.log('✅ WHMCS API response:', data);
 
     if (!response.ok || data.result !== 'success') {
       return res.status(500).json({ error: 'WHMCS API error', details: data });
     }
 
-    return res.status(200).json({ message: 'Client created successfully' });
+    return res.status(200).json({ message: 'Client created successfully', clientId: data.clientid });
   } catch (err) {
-    console.error('❌ Server error in /api/createClient:', err);
-    return res.status(500).json({ error: 'Server error', details: err.message });
+    console.error('❌ Unexpected error in /api/createClient:', err);
+    return res.status(500).json({ error: 'Unexpected server error', details: err.message });
   }
 }
-
