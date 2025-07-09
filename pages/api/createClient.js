@@ -4,9 +4,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('📩 Incoming request body:', req.body);
+    console.log('📥 Incoming request body:', req.body);
 
     const { email } = req.body;
+
     const apiUrl = process.env.WHMCS_API_URL;
     const identifier = process.env.WHMCS_API_IDENTIFIER;
     const secret = process.env.WHMCS_API_SECRET;
@@ -16,52 +17,40 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Missing WHMCS credentials' });
     }
 
+    // Prepare POST payload with required WHMCS fields
     const payload = new URLSearchParams({
+      identifier,
+      secret,
       action: 'AddClient',
       username: email,
       email,
-      password2: 'R@pidaHost123',
+      password2: 'R@pidaHost123', // หรือรับจาก req.body ก็ได้
       firstname: 'New',
       lastname: 'Client',
       country: 'TH',
-      responsetype: 'json',
+      responseType: 'json',
     });
 
-    const authHeader = 'WHMCS ' + Buffer.from(`${identifier}:${secret}`).toString('base64');
-
-    console.log('🌐 Sending request to WHMCS API:', apiUrl);
-    console.log('🔐 Authorization:', authHeader);
-    console.log('📦 Payload:', payload.toString());
-
+    // Send POST request to WHMCS
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
-        'Authorization': authHeader,
         'Content-Type': 'application/x-www-form-urlencoded',
       },
       body: payload.toString(),
     });
 
-    const raw = await response.text();
-    console.log('📥 Raw response from WHMCS:', raw);
-
-    let data;
-    try {
-      data = JSON.parse(raw);
-    } catch (jsonErr) {
-      console.error('❌ Failed to parse WHMCS response as JSON:', jsonErr.message);
-      return res.status(500).json({ error: 'Invalid JSON from WHMCS', raw });
-    }
-
-    console.log('✅ Parsed WHMCS response:', data);
+    const data = await response.json();
+    console.log('📤 WHMCS API Response:', data);
 
     if (!response.ok || data.result !== 'success') {
       return res.status(500).json({ error: 'WHMCS API error', details: data });
     }
 
-    return res.status(200).json({ message: 'Client created successfully', client: data });
+    return res.status(200).json({ message: 'Client created successfully', clientId: data.clientid });
+
   } catch (err) {
-    console.error('💥 Unhandled server error in /api/createClient:', err);
-    return res.status(500).json({ error: 'Unhandled server error', details: err.message });
+    console.error('❌ Server error in /api/createClient:', err);
+    return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
