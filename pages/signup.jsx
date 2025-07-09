@@ -16,10 +16,11 @@ export default function SignupPage() {
       setMessage(`Signup successful: ${user.email}`);
 
       // เรียก WHMCS API เพื่อสร้าง client ใหม่
-      await axios.post('/api/createClient', {
-        email,
-        password,
-      });
+      await fetch('/api/createClient', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: 'test@example.com' })
+});
 
     } catch (error) {
       setMessage(error.message);
