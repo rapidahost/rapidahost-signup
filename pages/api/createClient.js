@@ -10,8 +10,8 @@ export default async function handler(req, res) {
 
     // ✅ โหลดค่าจาก .env.local (ฝั่ง server)
     const apiUrl = process.env.WHMCS_API_URL;
-    const identifier = process.env.WHMCS_IDENTIFIER;
-    const secret = process.env.WHMCS_SECRET;
+    const identifier = process.env.WHMCS_API_IDENTIFIER;
+    const secret = process.env.WHMCS_API_SECRET;
 
     if (!apiUrl || !identifier || !secret) {
       console.error('❌ Missing WHMCS credentials in environment variables');
