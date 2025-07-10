@@ -6,37 +6,37 @@ export default async function handler(req, res) {
   try {
     const { firstname, lastname, email, password } = req.body;
 
-    // อ่านค่า Env แบบฝั่ง Server เท่านั้น
     const apiUrl = process.env.WHMCS_API_URL;
-    const identifier = process.env.WHMCS_API_IDENTIFIER;
-    const secret = process.env.WHMCS_API_SECRET;
+    const username = process.env.WHMCS_API_USERNAME;
+    const apiPassword = process.env.WHMCS_API_PASSWORD;
+    const accessKey = process.env.WHMCS_API_ACCESSKEY;
 
-    if (!apiUrl || !identifier || !secret) {
-      console.error('Missing WHMCS credentials');
-      return res.status(500).json({ error: 'Missing WHMCS credentials in environment variables' });
+    if (!apiUrl || !username || !apiPassword || !accessKey) {
+      console.error('❌ Missing WHMCS credentials in environment variables');
+      return res.status(500).json({ error: 'Missing WHMCS credentials' });
     }
 
     const payload = new URLSearchParams({
-      identifier,
-      secret,
+      username,
+      password: apiPassword,
+      accesskey: accessKey,
       action: 'AddClient',
       firstname,
       lastname,
       email,
       password2: password,
       country: 'TH',
-      responsetype: 'json'
+      responsetype: 'json',
     });
 
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: payload.toString(),
     });
 
     const data = await response.json();
+    console.log('WHMCS API Response:', data);
 
     if (data.result !== 'success') {
       return res.status(500).json({ error: 'WHMCS API error', details: data });
@@ -44,8 +44,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ message: 'Client created successfully', details: data });
 
-  } catch (error) {
-    console.error('API call failed:', error);
-    return res.status(500).json({ error: 'Internal server error', detail: error.message });
+  } catch (err) {
+    console.error('Server error:', err);
+    return res.status(500).json({ error: 'Server error', details: err.message });
   }
 }
