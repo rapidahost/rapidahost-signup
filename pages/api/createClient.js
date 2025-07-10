@@ -7,14 +7,13 @@ export default async function handler(req, res) {
     const { email } = req.body;
 
     const apiUrl = process.env.WHMCS_API_URL;
-    const apiUsername = process.env.admin;  // WHMCS admin username
-    const apiPassword = process.env.034hdskfSID7@;  // WHMCS admin password
-    const apiAccessKey = process.env.WgxMFWsrvlNgYjy36h2taCX4nSBLKbnx; // Access key defined in WHMCS
+const apiUsername = process.env.WHMCS_API_USERNAME;
+const apiPassword = process.env.WHMCS_API_PASSWORD;
+const apiAccessKey = process.env.WHMCS_API_ACCESSKEY;
 
-    if (!apiUrl || !apiUsername || !apiPassword || !apiAccessKey) {
-      console.error('❌ Missing WHMCS API credentials');
-      return res.status(500).json({ error: 'Missing WHMCS API credentials' });
-    }
+if (!apiUrl || !apiUsername || !apiPassword || !apiAccessKey) {
+  return res.status(500).json({ error: 'Missing WHMCS credentials' });
+}
 
     const payload = new URLSearchParams({
       username: apiUsername,
