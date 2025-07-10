@@ -4,26 +4,26 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { email } = req.body;
+    const { firstname, lastname, email, password } = req.body;
 
+    // อ่านค่า Env แบบฝั่ง Server เท่านั้น
     const apiUrl = process.env.WHMCS_API_URL;
-const apiUsername = process.env.WHMCS_API_USERNAME;
-const apiPassword = process.env.WHMCS_API_PASSWORD;
-const apiAccessKey = process.env.WHMCS_API_ACCESSKEY;
+    const identifier = process.env.WHMCS_API_IDENTIFIER;
+    const secret = process.env.WHMCS_API_SECRET;
 
-if (!apiUrl || !apiUsername || !apiPassword || !apiAccessKey) {
-  return res.status(500).json({ error: 'Missing WHMCS credentials' });
-}
+    if (!apiUrl || !identifier || !secret) {
+      console.error('Missing WHMCS credentials');
+      return res.status(500).json({ error: 'Missing WHMCS credentials in environment variables' });
+    }
 
     const payload = new URLSearchParams({
-      username: apiUsername,
-      password: apiPassword,
-      accesskey: apiAccessKey,
+      identifier,
+      secret,
       action: 'AddClient',
-      email: email,
-      password2: 'Rq@idahost123',
-      firstname: 'New',
-      lastname: 'Client',
+      firstname,
+      lastname,
+      email,
+      password2: password,
       country: 'TH',
       responsetype: 'json'
     });
@@ -37,7 +37,6 @@ if (!apiUrl || !apiUsername || !apiPassword || !apiAccessKey) {
     });
 
     const data = await response.json();
-    console.log('WHMCS API Response:', data);
 
     if (data.result !== 'success') {
       return res.status(500).json({ error: 'WHMCS API error', details: data });
@@ -45,8 +44,8 @@ if (!apiUrl || !apiUsername || !apiPassword || !apiAccessKey) {
 
     return res.status(200).json({ message: 'Client created successfully', details: data });
 
-  } catch (err) {
-    console.error('Server error:', err);
-    return res.status(500).json({ error: 'Server error', details: err.message });
+  } catch (error) {
+    console.error('API call failed:', error);
+    return res.status(500).json({ error: 'Internal server error', detail: error.message });
   }
 }
